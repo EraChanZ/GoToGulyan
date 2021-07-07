@@ -12,6 +12,7 @@ const token string = "1786001765:AAG40Y7K9MVfzDPriKRJHKetToDBx3T2V5s"
 type User struct {
 	Tg_username string
 	Full_name string
+	Avatar string
 }
 
 type Page struct {
@@ -63,6 +64,17 @@ func main()  {
 			if curpage.Sec_code == update.Message.Text {
 				msgtext = "Код верный. Молодес"
 				curpage.Authorized = true
+				curpage.Cur_user.Full_name = update.Message.From.FirstName + " " + update.Message.From.LastName
+
+				res, err := bot.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: update.Message.From.ID})
+				if err != nil{
+					panic(err)
+				}
+				photo, err := bot.GetFileDirectURL(res.Photos[0][0].FileID)
+				curpage.Cur_user.Avatar = photo
+				if err != nil{
+					panic(err)
+				}
 				json_data, err := json.Marshal(curpage)
 				if err != nil {
 					panic( err)
@@ -72,7 +84,6 @@ func main()  {
 				if err != nil {
 					panic(err)
 				}
-
 				err = client.Del(update.Message.From.UserName).Err()
 				if err != nil {
 					panic(err)
