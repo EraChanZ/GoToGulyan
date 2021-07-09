@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=f3d5a323-5c86-469e-b606-7e3cf11b5ee3&lang=ru_RU" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+
+        // Функция ymaps.ready() будет вызвана, когда
+        // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+        ymaps.ready(init);
+        function init(){
+
+            var myMap = new ymaps.Map("map", {
+                // Координаты центра карты.
+                // Порядок по умолчанию: «широта, долгота».
+                // Чтобы не определять координаты центра карты вручную,
+                // воспользуйтесь инструментом Определение координат.
+                center: [55.76, 37.64],
+                // Уровень масштабирования. Допустимые значения:
+                // от 0 (весь мир) до 19.
+                zoom: 7
+            });
+            {{if (ne .Cur_user.Lat .Cur_user.Long) }}
+            var plc = new ymaps.Placemark([{{.Cur_user.Lat}}, {{.Cur_user.Long}}], {
+
+            },
+            {iconImageHref: "{{.Cur_user.Avatar}}",
+                iconLayout: 'default#image',
+                iconImageSize: [30, 42],
+                // Смещение левого верхнего угла иконки относительно
+                // её "ножки" (точки привязки).
+                iconImageOffset: [-5, -38]
+            } )
+            window.prevlandmark = plc
+            myMap.geoObjects.add(plc)
+            {{end}}
+            myMap.events.add('click', function (e) {
+                if (window.choosingloc) {
+                    var coords = e.get('coords');
+                    var myPlacemarkWithContent = new ymaps.Placemark(coords, {
+
+                        },
+                        {iconImageHref: "{{.Cur_user.Avatar}}",
+                            iconLayout: 'default#image',
+                            iconImageSize: [30, 42],
+                            // Смещение левого верхнего угла иконки относительно
+                            // её "ножки" (точки привязки).
+                            iconImageOffset: [-5, -38]
+                        } )
+                    if (window.prevlandmark) {
+                        myMap.geoObjects.remove(window.prevlandmark)
+                    }
+                    myMap.geoObjects.add(myPlacemarkWithContent)
+                    window.prevlandmark = myPlacemarkWithContent
+                }
+
+            });
+        }
+
+        function openNav() {
+            document.getElementById("openbtn").hidden = true;
+            document.getElementById("mySidenav").style.width = "450px";
+
+        }
+
+        function setuploc() {
+            if (window.choosingloc) {
+                window.choosingloc = false
+                document.getElementById("setuploc").innerHTML = "Засетапить точку проживания"
+                if (window.prevlandmark) {
+                    console.log(window.prevlandmark.geometry._coordinates)
+                    const XHR = new XMLHttpRequest();
+                    urlEncodedDataPairs = ["lat="+window.prevlandmark.geometry._coordinates[0], "long="+window.prevlandmark.geometry._coordinates[1]]
+                    console.log(urlEncodedDataPairs)
+                    urlEncodedData = urlEncodedDataPairs.join( '&' ).replace( /%20/g, '+' );
+                    /*
+                    XHR.addEventListener( 'load', function(event) {
+                        alert( 'Yeah! Data sent and response loaded.' );
+                    } );
+
+                    // Define what happens in case of error
+                    XHR.addEventListener( 'error', function(event) {
+                        alert( 'Oops! Something went wrong.' );
+                    } );*/
+
+                    // Set up our request
+                    XHR.open( 'POST', '/setlocation/' );
+                    XHR.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
+
+                    // Finally, send our data.
+                    XHR.send( urlEncodedData );
+                }
+
+            }
+            else{
+                window.choosingloc = true
+                document.getElementById("setuploc").innerHTML = "Выбрал"
+            }
+        }
+
+        /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+        function closeNav() {
+            document.getElementById("openbtn").hidden = false;
+            document.getElementById("mySidenav").style.width = "0";
+        }
+    </script>
+    <style>
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #map {
+            min-height: 100%;
+        }
+
+        .block {
+            filter: blur(5px);
+            pointer-events:none;
+        }
+
+        .overlay {
+            position: fixed; /* Sit on top of the page content */
+            z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+            cursor: pointer; /* Add a pointer on hover */
+        }
+
+        #authmenu {
+            width: 30%;
+            height: 40%;
+            background-color: white;
+        }
+
+        .center {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .sidenav {
+            height: 100%; /* 100% Full-height */
+            width: 0; /* 0 width - change this with JavaScript */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Stay on top */
+            top: 0; /* Stay at the top */
+            right: 0;
+            background-color: #111; /* Black*/
+            overflow-x: hidden; /* Disable horizontal scroll */
+            padding-top: 60px; /* Place content 60px from the top */
+            transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+        }
+
+        /* The navigation menu links */
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        /* When you mouse over the navigation links, change their color */
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+        }
+
+        .vcenter {
+            display: flex;
+            justify-content: center;
+
+            align-items: center;
+            height: 200px;
+            border: 3px solid
+            green;
+        }
+
+        @media screen and (max-height: 450px) {
+            .sidenav {padding-top: 15px;}
+            .sidenav a {font-size: 18px;}
+        }
+
+    </style>
+</head>
+<body>
+
+<div  id = "authmenu" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
+
+    {{if not .Sec_code}}
+    <div style="margin-left: 40px">Пиши свой тег в телеге бро.</div>
+    <form method="POST" action="/login/">
+        <input type="text"  name="tg_username"><br>
+        <input type="submit" value="Submit">
+    </form>
+    {{else}}
+    <p>Ваш код: {{printf "%s" .Sec_code}}. У тебя 5 мин, чтобы написать @GoToMeets_bot этот код. Потом перезагрузи</p>
+    {{end}}
+
+</div>
+{{if .Authorized}}
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
+    <h2 style="color:white;word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
+    <button id="setuploc" onclick="setuploc()">Засетапить точку проживания</button>
+</div>
+
+<!-- Use any element to open the sidenav -->
+<span onclick="openNav()" id = "openbtn" class="overlay" style="left: 95%">
+    <h1 style="background-color: blue">блять</h1>
+</span>
+{{end}}
+
+<div id="map" {{if not .Authorized}}class="block"{{end}}></div>
+</body>
+</html>
