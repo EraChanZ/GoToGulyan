@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/nu7hatch/gouuid"
 	"html/template"
 	"log"
@@ -12,6 +15,7 @@ import (
 )
 
 type User struct {
+	gorm.Model
 	Tg_username string
 	Full_name string
 	Avatar string
@@ -19,16 +23,18 @@ type User struct {
 	Long float64
 }
 
+var db *gorm.DB
+var err error
+
+
 type Page struct {
 	Cur_user User
 	Sec_code string
 	Cookie_token string
 	Authorized bool
+	Registered bool
 }
 
-type Tg_Auth struct {
-	Tg_username string
-}
 
 var client redis.Client
 
@@ -41,12 +47,14 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue("tg_username")
 
+	usrexist := UserExist(username);
+
 	u, err := uuid.NewV4()
 	if err != nil {
 		println("uuid error", err)
 		return
 	}
-	json_data, err := json.Marshal(Page{Cookie_token: u.String(), Sec_code: u.String()[:6], Cur_user: User{Tg_username: username}})
+	json_data, err := json.Marshal(Page{Cookie_token: u.String(), Sec_code: u.String()[:6], Cur_user: User{Tg_username: username}, Registered: usrexist})
 	if err != nil {
 		println("json error", err)
 		return
@@ -92,10 +100,10 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	val, err := client.Get(c.Value).Result()
+	var curpage Page;
 	if err != nil {
 		println("redis recieve error", err)
 	}
-	var curpage Page;
 	json.Unmarshal([]byte(val), &curpage);
 	println("bruh", curpage.Sec_code)
 
@@ -107,6 +115,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	t.Execute(w, curpage)
 }
+
 
 func setLocation(w http.ResponseWriter, r *http.Request){
 	println("request to seloloc")
@@ -131,17 +140,22 @@ func setLocation(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	curpage.Cur_user.Long, err = strconv.ParseFloat(long, 64)
+
 	if err != nil {
 		println("parse error")
 		return
 	}
 
+	UpdateUser(&curpage.Cur_user)
+
 	json_data, err := json.Marshal(curpage)
+
 	if err != nil {
 		panic( err)
 	}
 
 	err = client.Set(curpage.Cookie_token, json_data, 0).Err()
+
 	if err != nil {
 		panic(err)
 	}
@@ -160,32 +174,56 @@ func initCache() {
 	})
 }
 
+func UserExist(usrname string) bool {
+	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var usr User
+
+	if err := db.Where("tg_username = ?", usrname).First(&usr).Error; err != nil {
+		return false
+	}
+	return true
+
+}
+
+func UpdateUser(usr *User) {
+	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	if err := db.Save(usr).Error; err != nil {
+		panic("Error at UpdateUser")
+	}
+
+}
+
+func initialMigration() {
+	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("failed to connect database")
+	}
+	defer db.Close()
+
+	// Migrate the schema
+	db.AutoMigrate(&User{})
+}
+
 func main() {
+
+	initialMigration()
 	initCache()
 	http.HandleFunc("/login/", LogIn)
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/setlocation/", setLocation)
-	/*
-		mux := http.NewServeMux()
-		mux.HandleFunc("/login/", LogIn)
-		mux.HandleFunc("/view/", viewHandler)
-		cfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		}
-		srv := &http.Server{
-			Addr:         ":8080",
-			Handler:      mux,
-			TLSConfig:    cfg,
-			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
-		}*/
-
 	log.Fatal(http.ListenAndServe(":8080", nil))
+
+
+
 }
