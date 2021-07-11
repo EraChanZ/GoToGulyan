@@ -23,6 +23,26 @@ type User struct {
 	Long float64
 }
 
+func (u User) AllOtherUsers() []User{
+	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var users []User
+	db.Find(&users)
+
+	for indptr := 0;indptr < len(users);indptr++ {
+		if users[indptr].Tg_username == u.Tg_username {
+			users = append(users[:indptr], users[indptr+1:]...)
+			break
+		}
+	}
+
+	return users
+}
+
 var db *gorm.DB
 var err error
 
@@ -102,15 +122,13 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	val, err := client.Get(c.Value).Result()
 	var curpage Page;
 	if err != nil {
-		println("redis recieve error", err)
-	}
-	json.Unmarshal([]byte(val), &curpage);
-	println("bruh", curpage.Sec_code)
-
-	if err != nil {
-		// If there is an error fetching from cache, return an internal server error status
-		log.Println("error retrieving token", err)
-		return
+		println("yes redis recieve error")
+	} else {
+		err = json.Unmarshal([]byte(val), &curpage);
+		println("bruh", curpage.Sec_code)
+		if err != nil {
+			println("error retrieving token")
+		}
 	}
 
 	t.Execute(w, curpage)
@@ -173,6 +191,8 @@ func initCache() {
 		PoolSize: 100,
 	})
 }
+
+
 
 func UserExist(usrname string) bool {
 	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")

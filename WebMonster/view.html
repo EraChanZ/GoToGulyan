@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="referrer" content="no-referrer">
     <script src="https://api-maps.yandex.ru/2.1/?apikey=f3d5a323-5c86-469e-b606-7e3cf11b5ee3&lang=ru_RU" type="text/javascript">
     </script>
     <script type="text/javascript">
@@ -20,20 +21,37 @@
                 // от 0 (весь мир) до 19.
                 zoom: 7
             });
-            {{if (ne .Cur_user.Lat .Cur_user.Long) }}
-            var plc = new ymaps.Placemark([{{.Cur_user.Lat}}, {{.Cur_user.Long}}], {
 
-            },
-            {iconImageHref: "{{.Cur_user.Avatar}}",
-                iconLayout: 'default#image',
-                iconImageSize: [30, 42],
-                // Смещение левого верхнего угла иконки относительно
-                // её "ножки" (точки привязки).
-                iconImageOffset: [-5, -38]
-            } )
-            window.prevlandmark = plc
-            myMap.geoObjects.add(plc)
+            {{if .Authorized}}
+                {{if (ne .Cur_user.Lat .Cur_user.Long) }}
+                var plc = new ymaps.Placemark([{{.Cur_user.Lat}}, {{.Cur_user.Long}}], {
+
+                },
+                {iconImageHref: "{{.Cur_user.Avatar}}",
+                    iconLayout: 'default#image',
+                    iconImageSize: [34, 42],
+                    // Смещение левого верхнего угла иконки относительно
+                    // её "ножки" (точки привязки).
+                    iconImageOffset: [-5, -38]
+                })
+                window.prevlandmark = plc
+                myMap.geoObjects.add(plc)
+                {{end}}
+
+                {{range .Cur_user.AllOtherUsers}}
+                    var plc = new ymaps.Placemark([{{.Lat}}, {{.Long}}], {},
+                    {iconImageHref: "{{.Avatar}}",
+                        iconLayout: 'default#image',
+                        iconImageSize: [34, 42],
+                        // Смещение левого верхнего угла иконки относительно
+                        // её "ножки" (точки привязки).
+                        iconImageOffset: [-5, -38]
+                    })
+                    myMap.geoObjects.add(plc)
+                {{end}}
+
             {{end}}
+
             myMap.events.add('click', function (e) {
                 if (window.choosingloc) {
                     var coords = e.get('coords');
@@ -42,7 +60,7 @@
                         },
                         {iconImageHref: "{{.Cur_user.Avatar}}",
                             iconLayout: 'default#image',
-                            iconImageSize: [30, 42],
+                            iconImageSize: [34, 42],
                             // Смещение левого верхнего угла иконки относительно
                             // её "ножки" (точки привязки).
                             iconImageOffset: [-5, -38]
@@ -122,7 +140,7 @@
 
         .overlay {
             position: fixed; /* Sit on top of the page content */
-            z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+            z-index: 3; /* Specify a stack order in case you're using a different order for other elements */
             cursor: pointer; /* Add a pointer on hover */
         }
 
@@ -221,8 +239,8 @@
 </div>
 
 <!-- Use any element to open the sidenav -->
-<span onclick="openNav()" id = "openbtn" class="overlay" style="left: 95%">
-    <h1 style="background-color: blue">блять</h1>
+<span onclick="openNav()" id = "openbtn" class="overlay" style="left: 90%">
+    <h1 style="background-color: blue">КНОПКА</h1>
 </span>
 {{end}}
 
