@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -24,10 +23,7 @@ type User struct {
 }
 
 func (u User) AllOtherUsers() []User{
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
-	if err != nil {
-		panic(err)
-	}
+	DBDefault()
 	defer db.Close()
 
 	var users []User
@@ -192,17 +188,19 @@ func initCache() {
 	})
 }
 
-
-
-func UserExist(usrname string) bool {
+func DBDefault()  {
 	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
 	if err != nil {
 		panic(err)
 	}
+}
+
+
+func UserExist(usrname string) bool {
+	DBDefault()
 	defer db.Close()
 
 	var usr User
-
 	if err := db.Where("tg_username = ?", usrname).First(&usr).Error; err != nil {
 		return false
 	}
@@ -211,10 +209,7 @@ func UserExist(usrname string) bool {
 }
 
 func UpdateUser(usr *User) {
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
-	if err != nil {
-		panic(err)
-	}
+	DBDefault()
 	defer db.Close()
 
 	if err := db.Save(usr).Error; err != nil {
@@ -224,13 +219,8 @@ func UpdateUser(usr *User) {
 }
 
 func initialMigration() {
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("failed to connect database")
-	}
+	DBDefault()
 	defer db.Close()
-
 	// Migrate the schema
 	db.AutoMigrate(&User{})
 }
