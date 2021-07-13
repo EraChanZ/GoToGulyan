@@ -30,20 +30,25 @@ type Page struct {
 	Registered bool
 }
 
+
+func DBDefault()  {
+	db, err = gorm.Open( "postgres", "host=172.18.96.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	if err != nil {
+		panic(err)
+	}
+}
+
 func initCache() {
 	// Initialize the redis connection to a redis instance running on your local machine
 	client = *redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: "172.18.96.1:6379",
 		Password: "",
 		DB: 0,
 	})
 }
 
 func FindUser(usrname string) *User {
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
-	if err != nil {
-		panic(err)
-	}
+	DBDefault()
 	defer db.Close()
 
 	var usr User
@@ -56,10 +61,7 @@ func FindUser(usrname string) *User {
 }
 
 func newUser(usr *User) {
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
-	if err != nil {
-		panic(err)
-	}
+	DBDefault()
 	defer db.Close()
 
 	if err := db.Create(usr).Error; err != nil {

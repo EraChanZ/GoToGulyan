@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -114,7 +115,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
+	println("cookie", c.Value)
 	val, err := client.Get(c.Value).Result()
 	var curpage Page;
 	if err != nil {
@@ -181,7 +182,7 @@ func setLocation(w http.ResponseWriter, r *http.Request){
 func initCache() {
 	// Initialize the redis connection to a redis instance running on your local machine
 	client = *redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: os.Getenv("ipv4addr") + ":6379",
 		Password: "",
 		DB: 0,
 		PoolSize: 100,
@@ -189,7 +190,8 @@ func initCache() {
 }
 
 func DBDefault()  {
-	db, err = gorm.Open( "postgres", "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g")
+	argstring := "host=" + os.Getenv("ipv4addr") + " port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	db, err = gorm.Open( "postgres", argstring)
 	if err != nil {
 		panic(err)
 	}

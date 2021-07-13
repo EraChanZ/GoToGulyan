@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="referrer" content="no-referrer">
+
     <script src="https://api-maps.yandex.ru/2.1/?apikey=f3d5a323-5c86-469e-b606-7e3cf11b5ee3&lang=ru_RU" type="text/javascript">
     </script>
     <script type="text/javascript">
@@ -47,6 +47,14 @@
                         // её "ножки" (точки привязки).
                         iconImageOffset: [-5, -38]
                     })
+                    plc.events.add("click", function (e) {
+                        document.getElementById("main_menu").hidden = true
+                        document.getElementById("user_page").hidden = false
+                        document.getElementById("user_avatar").src = {{.Avatar}}
+                        document.getElementById("user_fullname").innerHTML = "{{.Full_name}}"
+                        document.getElementById("user_username").innerHTML = "Telegram: @{{.Tg_username}}"
+                        openNav()
+                    })
                     myMap.geoObjects.add(plc)
                 {{end}}
 
@@ -65,6 +73,7 @@
                             // её "ножки" (точки привязки).
                             iconImageOffset: [-5, -38]
                         } )
+
                     if (window.prevlandmark) {
                         myMap.geoObjects.remove(window.prevlandmark)
                     }
@@ -121,6 +130,11 @@
             document.getElementById("openbtn").hidden = false;
             document.getElementById("mySidenav").style.width = "0";
         }
+
+        function backNav(){
+            document.getElementById("main_menu").hidden = false
+            document.getElementById("user_page").hidden = true
+        }
     </script>
     <style>
 
@@ -148,6 +162,7 @@
             width: 30%;
             height: 40%;
             background-color: white;
+            text-align: center;
         }
 
         .center {
@@ -167,6 +182,19 @@
             overflow-x: hidden; /* Disable horizontal scroll */
             padding-top: 60px; /* Place content 60px from the top */
             transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+            text-align:center;
+
+        }
+
+        .prettybutton {
+            background-color: gray; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
         }
 
         /* The navigation menu links */
@@ -188,6 +216,14 @@
             position: absolute;
             top: 0;
             right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        .backbtn {
+            position: absolute;
+            top: 0;
+            left: 25px;
             font-size: 36px;
             margin-left: 50px;
         }
@@ -220,22 +256,32 @@
 <div  id = "authmenu" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
 
     {{if not .Sec_code}}
-    <div style="margin-left: 40px">Пиши свой тег в телеге бро.</div>
+    <h2>Пиши свой тег в телеге бро.</h2>
     <form method="POST" action="/login/">
-        <input type="text"  name="tg_username"><br>
-        <input type="submit" value="Submit">
+        <input type="text"  name="tg_username"><br><br>
+        <input type="submit" value="Submit" class="prettybutton">
     </form>
     {{else}}
-    <p>Ваш код: {{printf "%s" .Sec_code}}. У тебя 5 мин, чтобы написать @GoToMeets_bot этот код. Потом перезагрузи</p>
+    <h3>Ваш код: {{printf "%s" .Sec_code}}</h3>
+    <p>У тебя 5 мин, чтобы написать <b>@GoToMeets_bot</b> этот код в телеграме.</p>
+    <p style="color: red;font-weight: bold;">Потом перезагрузи</p>
     {{end}}
 
 </div>
 {{if .Authorized}}
 <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
-    <h2 style="color:white;word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
-    <button id="setuploc" onclick="setuploc()">Засетапить точку проживания</button>
+    <div id="main_menu">
+        <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
+        <h2 style="color:white;word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
+        <button id="setuploc" class="prettybutton" onclick="setuploc()">Засетапить точку проживания</button>
+    </div>
+    <div hidden id="user_page">
+        <a href="javascript:void(0)" class="backbtn" onclick="backNav()"><</a>
+        <img id="user_avatar" alt="Avatar" class="avatar">
+        <h2 style="color:white" id="user_fullname"> </h2>
+        <h2 style="color:white" id="user_username"> </h2>
+    </div>
 </div>
 
 <!-- Use any element to open the sidenav -->
