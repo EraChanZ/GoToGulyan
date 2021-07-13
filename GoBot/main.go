@@ -117,7 +117,13 @@ func main()  {
 					if err != nil{
 						panic(err)
 					}
-					photo, err := bot.GetFileDirectURL(res.Photos[0][0].FileID)
+					var photo string;
+					if len(res.Photos) > 0 {
+						photo, err = bot.GetFileDirectURL(res.Photos[0][0].FileID)
+					} else {
+						photo = "https://pmdoc.ru/wp-content/uploads/default-avatar-300x300.png"
+					}
+					//photo, err := bot.GetFileDirectURL(res.Photos[0][0].FileID)
 					curpage.Cur_user.Avatar = photo
 					if err != nil{
 						panic(err)

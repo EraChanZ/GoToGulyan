@@ -1,29 +1,25 @@
-version "3"
+version: "3.9"
 services:
-
     webmonster_docker:
         build: WebMonster/
         restart: always
         ports:
             - 8080:8080
         environment:
-            - ipv4addr=172.18.96.1
-
+            - ipv4addr=10.116.0.2
     gobot_docker:
         build: GoBot/
         restart: always
         environment:
-            - ipv4addr=172.18.96.1
-
-    postgres:
+            - ipv4addr=10.116.0.2
+    db:
         image: postgres
         restart: always
         ports:
-            5432:5432
+            - 5432:5432
         environment:
-            POSTGRES_PASSWORD="s6c89q4g"
-
-    redis:
+            - POSTGRES_PASSWORD=s6c89q4g
+    rediska:
         image: redis
         restart: always
         ports:
