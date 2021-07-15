@@ -90,14 +90,24 @@
 
         }
 
+        function random_sdvig(start_x, start_y, radius) {
+            r_angle = Math.random() * 2 * Math.PI
+            sdvig_pnt_x = start_x + Math.random() * radius * Math.cos(r_angle)
+            sdvig_pnt_y = Math.tan(r_angle) * sdvig_pnt_x + start_y - Math.tan(r_angle) * start_x
+            return [sdvig_pnt_x, sdvig_pnt_y]
+        }
+
         function setuploc() {
             if (window.choosingloc) {
                 window.choosingloc = false
                 document.getElementById("setuploc").innerHTML = "Засетапить точку проживания"
+                document.getElementById("Note").innerHTML = ""
                 if (window.prevlandmark) {
                     console.log(window.prevlandmark.geometry._coordinates)
                     const XHR = new XMLHttpRequest();
-                    urlEncodedDataPairs = ["lat="+window.prevlandmark.geometry._coordinates[0], "long="+window.prevlandmark.geometry._coordinates[1]]
+                    console.log("before", window.prevlandmark.geometry._coordinates)
+                    drunkcoords = random_sdvig(window.prevlandmark.geometry._coordinates[0], window.prevlandmark.geometry._coordinates[1], 0.01)
+                    urlEncodedDataPairs = ["lat="+drunkcoords[0], "long="+drunkcoords[1]]
                     console.log(urlEncodedDataPairs)
                     urlEncodedData = urlEncodedDataPairs.join( '&' ).replace( /%20/g, '+' );
                     /*
@@ -121,6 +131,7 @@
             }
             else{
                 window.choosingloc = true
+                document.getElementById("Note").innerHTML = "Внимание! Указанные вами координаты будут сдвинуты на случайное расстояние, чтобы вас никто не подкараулил у подъезда."
                 document.getElementById("setuploc").innerHTML = "Выбрал"
             }
         }
@@ -255,16 +266,8 @@
 
 <div  id = "authmenu" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
 
-    {{if not .Sec_code}}
-    <h2>Пиши свой тег в телеге бро.</h2>
-    <form method="POST" action="/login/">
-        <input type="text"  name="tg_username"><br><br>
-        <input type="submit" value="Submit" class="prettybutton">
-    </form>
-    {{else}}
-    <h3>Ваш код: {{printf "%s" .Sec_code}}</h3>
-    <p>У тебя 5 мин, чтобы написать <b>@GoToMeets_bot</b> этот код в телеграме.</p>
-    <p style="color: red;font-weight: bold;">Потом перезагрузи</p>
+    {{if not .Authorized}}
+    <p>Напиши боту <b>@GoToMeets_bot</b> в Telegram, чтобы получить ссылку.</p>
     {{end}}
 
 </div>
@@ -275,6 +278,7 @@
         <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
         <h2 style="color:white;word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
         <button id="setuploc" class="prettybutton" onclick="setuploc()">Засетапить точку проживания</button>
+        <p id="Note" style="color: red; padding-right: 20px;padding-left: 20px"></p>
     </div>
     <div hidden id="user_page">
         <a href="javascript:void(0)" class="backbtn" onclick="backNav()"><</a>

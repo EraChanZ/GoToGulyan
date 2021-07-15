@@ -1,12 +1,36 @@
 version: "3.9"
 services:
+    traefik:
+        image: "traefik:v2.4"
+        container_name: "traefik"
+        command:
+      #- "--log.level=DEBUG"
+            - "--api.insecure=true"
+            - "--providers.docker=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--entrypoints.websecure.address=:443"
+            - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+           # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+            - "--certificatesresolvers.myresolver.acme.email=vladimirsachkov2003@gmail.com"
+            - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+        ports:
+            - "443:443"
+            - "8080:8080"
+        volumes:
+            - "./letsencrypt:/letsencrypt"
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
     webmonster_docker:
         build: WebMonster/
         restart: always
-        ports:
-            - 8080:8080
         environment:
             - ipv4addr=10.116.0.2
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.webmonster_docker.rule=Host(`167.99.234.173`)"
+            - "traefik.http.routers.webmonster_docker.entrypoints=websecure"
+            - "traefik.http.routers.webmonster_docker.tls.certresolver=myresolver"
+        ports:
+            - "80:80"
     gobot_docker:
         build: GoBot/
         restart: always
