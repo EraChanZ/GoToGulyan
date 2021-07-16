@@ -24,6 +24,41 @@ const cloudinary_API_KEY string = "896491813758597"
 const cloudinary_API_SECRET string = "garf_hPU42GPUsyBAvaBQ9MjU2k"
 const cloudinary_upload_preset string = "uxgityak"
 
+var Markups = map[string]tgbotapi.ReplyKeyboardMarkup{
+	"/" : tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Клик"),
+			tgbotapi.NewKeyboardButton("Обновить данные"),
+		),
+	),
+	"/pd/" : tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Фотку"),
+			tgbotapi.NewKeyboardButton("Полное имя"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Назад"),
+		),
+	),
+	"/pd/photo/" : tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Назад"),
+		),
+	),
+	"/pd/fullname/": tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Назад"),
+		),
+	),
+}
+
+
+var pd_photo = tgbotapi.NewReplyKeyboard(
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("Назад"),
+	),
+)
+
 type User struct {
 	gorm.Model
 	Tg_username string
@@ -36,6 +71,8 @@ type User struct {
 type respdecode struct {
 	Secure_url string
 }
+
+var BotSessions = make(map[int]string)
 
 
 func DBDefault()  {
@@ -100,7 +137,35 @@ func UpdateUser(usr *User) {
 	}
 }
 
-func setupuser(user *User) string{
+func reducepath(s string) string{
+	arr := strings.Split(s, "/")
+	return strings.Join(arr[:len(arr)-2], "/") + "/"
+}
+
+func FullUpdateUser(usr *User)  {
+	curtoken, err := client.Get(usr.Tg_username).Result()
+	if err != nil {
+		panic(err)
+	}
+	json_data, err := json.Marshal(usr)
+	if err != nil {
+		panic(err)
+	}
+	expires_in, err := client.TTL(curtoken).Result()
+	if err != nil {
+		panic(err)
+	}
+	client.Set(curtoken, json_data, expires_in)
+	UpdateUser(usr)
+}
+
+func setupuser(user *User, prevtoken string) string{
+	if prevtoken != "" {
+		err = client.Del(prevtoken).Err()
+		if err != nil {
+			println("error deleting prevtoken", err)
+		}
+	}
 	u, err := uuid.NewV4()
 	if err != nil {
 		println("uuid error", err)
@@ -171,6 +236,8 @@ func main()  {
 			continue
 		}
 		var user User;
+		var prevtoken string;
+
 		r, err := client.Exists(update.Message.From.UserName).Result()
 		println("ressss", r)
 		if err != nil {
@@ -192,25 +259,97 @@ func main()  {
 			}
 
 		} else {
-			prevtoken, err := client.Get(update.Message.From.UserName).Result()
+			prevtoken, err = client.Get(update.Message.From.UserName).Result()
 			if err != nil {
 				panic(err)
 			}
 			val, err := client.Get(prevtoken).Result()
 			if err != nil {
-				println("PUPIX", prevtoken)
 				panic(err)
 			}
-			json.Unmarshal([]byte(val), &user);
-			err = client.Del(prevtoken).Err()
-			if err != nil {
-				println("error deleting prevtoken", err)
-			}
+			json.Unmarshal([]byte(val), &user)
+
 		}
 
-		newtoken := setupuser(&user)
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "У тебя есть 1 минута, чтобы перейти по ссылке. http://167.99.234.173/view/?authtoken="+newtoken)
-		if _, err := bot.Send(msg); err != nil {
+		if _, ok := BotSessions[update.Message.From.ID]; !ok {
+			BotSessions[update.Message.From.ID] = "/"
+		}
+
+		var response tgbotapi.MessageConfig;
+
+		switch BotSessions[update.Message.From.ID] {
+		case "/":
+			switch update.Message.Text {
+			case "Обновить данные":
+				BotSessions[update.Message.From.ID] += "pd/"
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Что хочешь обновить?")
+			default:
+				newtoken := setupuser(&user, prevtoken)
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "У тебя есть 1 минута, чтобы перейти по ссылке. http://167.99.234.173/view/?authtoken="+newtoken)
+			}
+		case "/pd/":
+			switch update.Message.Text {
+			case "Назад":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Вернулся")
+				BotSessions[update.Message.From.ID] = reducepath(BotSessions[update.Message.From.ID])
+			case "Фотку":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Присылай фотку")
+				BotSessions[update.Message.From.ID] += "photo/"
+			case "Полное имя":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Пиши полное имя")
+				BotSessions[update.Message.From.ID] += "fullname/"
+			default:
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Че ты не то сказал")
+			}
+		case "/pd/photo/":
+			switch update.Message.Text {
+			case "Назад":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Вернулся")
+				BotSessions[update.Message.From.ID] = reducepath(BotSessions[update.Message.From.ID])
+			default:
+				if len(update.Message.Photo) > 0 {
+					tg_photo, err := bot.GetFileDirectURL(update.Message.Photo[0].FileID)
+					if err != nil{
+						panic(err)
+					}
+					resp, err := http.PostForm(cloudinary_url, url.Values{"file":{tg_photo},
+						"api_key": {cloudinary_API_KEY},
+						"upload_preset": {cloudinary_upload_preset},
+					})
+					if err != nil{
+						panic(err)
+					}
+					newobj := respdecode{}
+					err = json.NewDecoder(resp.Body).Decode(&newobj)
+					if err != nil{
+						panic(err)
+					}
+					user.Avatar = newobj.Secure_url
+					FullUpdateUser(&user)
+					response = tgbotapi.NewMessage(update.Message.Chat.ID, "Загрузил фотку, возвращаю назад.")
+					BotSessions[update.Message.From.ID] = reducepath(BotSessions[update.Message.From.ID])
+				} else {
+					response = tgbotapi.NewMessage(update.Message.Chat.ID, "Ты ниче не прислал")
+				}
+			}
+		case "/pd/fullname/":
+			switch update.Message.Text {
+			case "Назад":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Вернулся")
+				BotSessions[update.Message.From.ID] = reducepath(BotSessions[update.Message.From.ID])
+			case "":
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "В твоём сообщении нет текста")
+			default:
+				user.Full_name = update.Message.Text
+				FullUpdateUser(&user)
+				response = tgbotapi.NewMessage(update.Message.Chat.ID, "Сохранил, возвращаю назад.")
+				BotSessions[update.Message.From.ID] = reducepath(BotSessions[update.Message.From.ID])
+			}
+			}
+
+		println(BotSessions[update.Message.From.ID])
+		response.ReplyMarkup = Markups[BotSessions[update.Message.From.ID]]
+		if _, err := bot.Send(response); err != nil {
 			panic(err)
 		}
 
