@@ -21,6 +21,7 @@ services:
         build: WebMonster/
         restart: always
         environment:
+            - POSTGRES_PASSWORD=s6c89q4g
             - ipv4addr=10.116.0.2
         labels:
             - "traefik.enable=true"
@@ -34,7 +35,13 @@ services:
         build: GoBot/
         restart: always
         environment:
+            - POSTGRES_PASSWORD=s6c89q4g
+            - Bot_token=1865007974:AAHuwFGJCb1AkVVlrxNVDFk_UZT-i4CvnKA
             - ipv4addr=10.116.0.2
+            - cloudinary_API_KEY=896491813758597
+            - cloudinary_API_SECRET=garf_hPU42GPUsyBAvaBQ9MjU2k
+            - cloudinary_upload_preset=uxgityak
+            - cloudinary_url=https://api.cloudinary.com/v1_1/demo/image/upload
     db:
         image: postgres
         restart: always

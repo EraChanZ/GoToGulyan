@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -189,7 +190,7 @@ func initCache() {
 
 func DBDefault()  {
 	//argstring := "host=" + os.Getenv("ipv4addr") + " port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
-	argstring := "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	argstring := "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=" + os.Getenv("POSTGRES_PASSWORD")
 	db, err = gorm.Open( "postgres", argstring)
 	if err != nil {
 		panic(err)
@@ -222,7 +223,5 @@ func main() {
 	http.HandleFunc("/", viewHandler)
 	http.HandleFunc("/setlocation/", setLocation)
 	log.Fatal(http.ListenAndServe(":80", nil))
-
-
 
 }

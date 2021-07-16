@@ -9,6 +9,7 @@ import (
 	"github.com/nu7hatch/gouuid"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -16,13 +17,6 @@ import (
 var client redis.Client
 var db *gorm.DB
 var err error
-//const token string = "1786001765:AAG40Y7K9MVfzDPriKRJHKetToDBx3T2V5s"
-const token string = "1865007974:AAHuwFGJCb1AkVVlrxNVDFk_UZT-i4CvnKA"
-
-const cloudinary_url string = "https://api.cloudinary.com/v1_1/demo/image/upload"
-const cloudinary_API_KEY string = "896491813758597"
-const cloudinary_API_SECRET string = "garf_hPU42GPUsyBAvaBQ9MjU2k"
-const cloudinary_upload_preset string = "uxgityak"
 
 var Markups = map[string]tgbotapi.ReplyKeyboardMarkup{
 	"/" : tgbotapi.NewReplyKeyboard(
@@ -76,8 +70,8 @@ var BotSessions = make(map[int]string)
 
 
 func DBDefault()  {
-	argstring := "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
-	//argstring := "host=" + os.Getenv("ipv4addr") + " port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	//argstring := "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	argstring := "host=" + os.Getenv("ipv4addr") + " port=5432 user=postgres dbname=postgres sslmode=disable password=" + os.Getenv("POSTGRES_PASSWORD")
 	db, err = gorm.Open( "postgres", argstring)
 	if err != nil {
 		panic(err)
@@ -87,8 +81,8 @@ func DBDefault()  {
 func initCache() {
 	// Initialize the redis connection to a redis instance running on your local machine
 	client = *redis.NewClient(&redis.Options{
-		Addr: "127.0.0.1:6379",
-		//Addr: os.Getenv("ipv4addr") + ":6379",
+		//Addr: "127.0.0.1:6379",
+		Addr: os.Getenv("ipv4addr") + ":6379",
 		Password: "",
 		DB: 0,
 	})
@@ -200,9 +194,9 @@ func Message2User (updt *tgbotapi.Update, botptr *tgbotapi.BotAPI) *User {
 		if err != nil{
 			panic(err)
 		}
-		resp, err := http.PostForm(cloudinary_url, url.Values{"file":{tg_photo},
-			"api_key": {cloudinary_API_KEY},
-			"upload_preset": {cloudinary_upload_preset},
+		resp, err := http.PostForm(os.Getenv("cloudinary_url"), url.Values{"file":{tg_photo},
+			"api_key": {os.Getenv("cloudinary_API_KEY")},
+			"upload_preset": {os.Getenv("cloudinary_upload_preset")},
 		})
 		if err != nil{
 			panic(err)
@@ -221,7 +215,7 @@ func Message2User (updt *tgbotapi.Update, botptr *tgbotapi.BotAPI) *User {
 
 func main()  {
 	initCache()
-	bot, err := tgbotapi.NewBotAPI(token)
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("Bot_token"))
 	if err != nil {
 		panic(err)
 	}
@@ -312,9 +306,9 @@ func main()  {
 					if err != nil{
 						panic(err)
 					}
-					resp, err := http.PostForm(cloudinary_url, url.Values{"file":{tg_photo},
-						"api_key": {cloudinary_API_KEY},
-						"upload_preset": {cloudinary_upload_preset},
+					resp, err := http.PostForm(os.Getenv("cloudinary_url"), url.Values{"file":{tg_photo},
+						"api_key": {os.Getenv("cloudinary_API_KEY")},
+						"upload_preset": {os.Getenv("cloudinary_upload_preset")},
 					})
 					if err != nil{
 						panic(err)
