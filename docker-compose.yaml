@@ -2,35 +2,34 @@ version: "3.9"
 services:
     traefik:
         image: "traefik:v2.4"
-        container_name: "traefik"
-        command:
-      #- "--log.level=DEBUG"
-            - "--api.insecure=true"
-            - "--providers.docker=true"
-            - "--providers.docker.exposedbydefault=false"
-            - "--entrypoints.websecure.address=:443"
-            - "--certificatesresolvers.lets-encrypt.acme.tlschallenge=true"
-            - "--certificatesresolvers.lets-encrypt.acme.email=vladimirsachkov2003@gmail.com"
-            - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
         ports:
-            - "443:443"
-            - "8080:8080"
+            - "443:443" #Docker sends requests on port 443 to Traefik on port 443
+            - "80:80"
+        command:
+            - --entrypoints.websecure.address=:443
+            - --entrypoints.web.address=:80
+            - --providers.docker=true
+            - --certificatesresolvers.le.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+            - --certificatesresolvers.le.acme.email=vladimirsachkov2003@gmail.com
+            - --certificatesresolvers.le.acme.storage=/acme.json
+            - --certificatesresolvers.le.acme.tlschallenge=true
         volumes:
-            - "./letsencrypt:/letsencrypt"
-            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            #- ./configuration/traefik.toml:/traefik.toml:ro
+            - ./configuration/acme.json:/acme.json
     webmonster_docker:
         build: WebMonster/
         restart: always
         environment:
             - ipv4addr=10.116.0.2
         labels:
-            - traefik.enable=true
-            - traefik.http.routers.webmonster_docker.rule=Host(`map`)
-            - traefik.http.routers.webmonster_docker.tls=true
-            - traefik.port=80
-            - traefik.http.routers.webmonster_docker.tls.certresolver=myresolver
-        ports:
-            - "80:80"
+            - "traefik.enable=true"
+            - "traefik.port=80"
+            #- "traefik.http.routers.webmonster_docker.entrypoints=https"
+            - "traefik.http.routers.webmonster_docker.rule=Host(`map.goto.msk.ru`)"
+            - "traefik.http.routers.webmonster_docker.tls=true"
+            - "traefik.http.routers.webmonster_docker.tls.certresolver=le"
+
     gobot_docker:
         build: GoBot/
         restart: always
