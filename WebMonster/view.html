@@ -264,9 +264,10 @@
 </head>
 <body>
 
-<div  id = "authmenu" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
+<div  id = "authmenu" style = "border-radius: 10px" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
 
     {{if not .Authorized}}
+    <p><img src="images/1X6lrC7q_XI1.jpg" alt=""></p>
     <p>Напиши боту <b>@GoToMeets_bot</b> в Telegram, чтобы получить ссылку.</p>
     {{end}}
 
