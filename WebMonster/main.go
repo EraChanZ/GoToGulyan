@@ -46,51 +46,38 @@ var err error
 
 type Page struct {
 	Cur_user User
-	Sec_code string
-	Cookie_token string
 	Authorized bool
-	Registered bool
 }
 
 
 var client redis.Client
 
-func LogIn(w http.ResponseWriter, r *http.Request) {
-
-	if err := r.ParseForm(); err != nil {
-		println("ParseForm err: %v", err)
-		return
-	}
-
-	username := r.FormValue("tg_username")
-
-	usrexist := UserExist(username);
+func LogIn(user *User, prevtoken string, w http.ResponseWriter)  {
 
 	u, err := uuid.NewV4()
 	if err != nil {
 		println("uuid error", err)
-		return
 	}
-	json_data, err := json.Marshal(Page{Cookie_token: u.String(), Sec_code: u.String()[:6], Cur_user: User{Tg_username: username}, Registered: usrexist})
+
+	json_data, err := json.Marshal(*user)
 	if err != nil {
 		println("json error", err)
-		return
 	}
 
-	err = client.Set(u.String(), json_data, time.Second*60*5).Err()
+	err = client.Set(u.String(), json_data, time.Second*60*60).Err()
+	if err != nil {
+		println("error setting cookie", err)
+	}
+
+	err = client.Del(prevtoken).Err()
+	if err != nil {
+		println("error deleting prevtoken", err)
+	}
+
+	err = client.Set(user.Tg_username, u.String(), time.Second*60*60).Err()
 	if err != nil {
 		println(err)
 	}
-
-
-
-	err = client.Set(username, json_data, time.Second*60*5).Err()
-	if err != nil {
-		println(err)
-	}
-
-	//_, err = cache.Do("SET", u.String(), "120", &(Page{Sec_code: u.String()[:6]}) )
-
 
 	http.SetCookie(w, &http.Cookie{
 		Name:    "Gotomeets_session_token",
@@ -99,32 +86,42 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 		Path: "/",
 	})
 
-	http.Redirect(w, r,"/view", http.StatusFound)
+
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.ParseFiles("view.html")
 
-	c, err := r.Cookie("Gotomeets_session_token")
-	if err != nil {
-		println("maniga", c)
-		if err == http.ErrNoCookie {
-			p := &Page{}
-			t.Execute(w, p)
+	authtoken := r.URL.Query().Get("authtoken")
+	if authtoken != "" {
+		val, err := client.Get(authtoken).Result()
+		if err == nil {
+			var curuser User;
+			json.Unmarshal([]byte(val), &curuser);
+			LogIn(&curuser, authtoken, w)
+			http.Redirect(w, r,"/", http.StatusFound)
 			return
 		}
 	}
+
+	c, err := r.Cookie("Gotomeets_session_token")
+	if err != nil {
+		p := &Page{}
+		t.Execute(w, p)
+		return
+	}
 	println("cookie", c.Value)
 	val, err := client.Get(c.Value).Result()
+	var curuser User;
 	var curpage Page;
 	if err != nil {
 		println("yes redis recieve error")
 	} else {
-		err = json.Unmarshal([]byte(val), &curpage);
-		println("bruh", curpage.Sec_code)
-		if err != nil {
-			println("error retrieving token")
+		err = json.Unmarshal([]byte(val), &curuser);
+		if err == nil {
+			curpage.Cur_user = curuser
+			curpage.Authorized = true
 		}
 	}
 
@@ -133,7 +130,6 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func setLocation(w http.ResponseWriter, r *http.Request){
-	println("request to seloloc")
 	if err := r.ParseForm(); err != nil {
 		println("ParseForm err: %v", err)
 		return
@@ -146,30 +142,32 @@ func setLocation(w http.ResponseWriter, r *http.Request){
 		println("redis recieve error", err)
 		return
 	}
-	var curpage Page;
-	json.Unmarshal([]byte(val), &curpage);
+	var curuser User;
+	json.Unmarshal([]byte(val), &curuser);
+	println("request to seloloc was", curuser.Lat, curuser.Long)
 
-	curpage.Cur_user.Lat, err = strconv.ParseFloat(lat, 64)
+	curuser.Lat, err = strconv.ParseFloat(lat, 64)
 	if err != nil {
 		println("parse error")
 		return
 	}
-	curpage.Cur_user.Long, err = strconv.ParseFloat(long, 64)
-
+	curuser.Long, err = strconv.ParseFloat(long, 64)
 	if err != nil {
 		println("parse error")
 		return
 	}
 
-	UpdateUser(&curpage.Cur_user)
+	println("request to seloloc stal", curuser.Lat, curuser.Long)
 
-	json_data, err := json.Marshal(curpage)
+	UpdateUser(&curuser)
+
+	json_data, err := json.Marshal(curuser)
+
 
 	if err != nil {
 		panic( err)
 	}
-
-	err = client.Set(curpage.Cookie_token, json_data, 0).Err()
+	err = client.Set(c.Value, json_data, time.Second * 60 * 60).Err()
 
 	if err != nil {
 		panic(err)
@@ -182,7 +180,8 @@ func setLocation(w http.ResponseWriter, r *http.Request){
 func initCache() {
 	// Initialize the redis connection to a redis instance running on your local machine
 	client = *redis.NewClient(&redis.Options{
-		Addr: os.Getenv("ipv4addr") + ":6379",
+		Addr: os.Getenv("REDIS_HOST") + ":6379",
+		//Addr: "127.0.0.1:6379",
 		Password: "",
 		DB: 0,
 		PoolSize: 100,
@@ -190,7 +189,8 @@ func initCache() {
 }
 
 func DBDefault()  {
-	argstring := "host=" + os.Getenv("ipv4addr") + " port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	argstring := "host=" + os.Getenv("DD_DB_HOST") + " port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
+	//argstring := "host=127.0.0.1 port=5432 user=postgres dbname=postgres sslmode=disable password=s6c89q4g"
 	db, err = gorm.Open( "postgres", argstring)
 	if err != nil {
 		panic(err)
@@ -198,17 +198,6 @@ func DBDefault()  {
 }
 
 
-func UserExist(usrname string) bool {
-	DBDefault()
-	defer db.Close()
-
-	var usr User
-	if err := db.Where("tg_username = ?", usrname).First(&usr).Error; err != nil {
-		return false
-	}
-	return true
-
-}
 
 func UpdateUser(usr *User) {
 	DBDefault()
@@ -231,11 +220,11 @@ func main() {
 
 	initialMigration()
 	initCache()
-	http.HandleFunc("/login/", LogIn)
-	http.HandleFunc("/view/", viewHandler)
+	http.HandleFunc("/", viewHandler)
 	http.HandleFunc("/setlocation/", setLocation)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":80", nil))
 
 
 
 }
+

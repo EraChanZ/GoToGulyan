@@ -1,29 +1,57 @@
-version "3"
-
+version: "3.9"
 services:
+    traefik:
+        image: "traefik:v2.4"
+        ports:
+            - "443:443" #Docker sends requests on port 443 to Traefik on port 443
+            - "80:80"
+        command:
+            - --entrypoints.websecure.address=:443
+            - --entrypoints.web.address=:80
+            - --providers.docker=true
+            #- --certificatesresolvers.le.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+            - --certificatesresolvers.le.acme.email=vladimirsachkov2003@gmail.com
+            - --certificatesresolvers.le.acme.storage=/acme.json
+            - --certificatesresolvers.le.acme.tlschallenge=true
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            #- ./configuration/traefik.toml:/traefik.toml:ro
+            - ./configuration/acme.json:/acme.json
     webmonster_docker:
         build: WebMonster/
         restart: always
-        ports:
-            - 8080:8080
         environment:
-            - ipv4addr=172.18.96.1
-    
+            - DD_DB_HOST=db
+            - REDIS_HOST=rediska
+        labels:
+            - "traefik.enable=true"
+            - "traefik.port=80"
+            #- "traefik.http.routers.webmonster_docker.entrypoints=https"
+            - "traefik.http.routers.webmonster_docker.rule=Host(`meet.goto.msk.ru`)"
+            - "traefik.http.routers.webmonster_docker.tls=true"
+            - "traefik.http.routers.webmonster_docker.tls.certresolver=le"
+        depends_on:
+            - db
+            - rediska
+        
     gobot_docker:
         build: GoBot/
         restart: always
-        
-    postgres:
+        environment:
+            - DD_DB_HOST=db
+            - REDIS_HOST=rediska
+        depends_on:
+            - db
+            - rediska
+    db:
         image: postgres
         restart: always
         ports:
-            5432:5432
+            - 5432:5432
         environment:
-            POSTGRES_PASSWORD="s6c89q4g"
-            
-    redis:
+            - POSTGRES_PASSWORD=s6c89q4g
+    rediska:
         image: redis
         restart: always
         ports:
             - 6379:6379
-        
