@@ -52,7 +52,9 @@ type Page struct {
 
 var client redis.Client
 
-func LogIn(user *User, prevtoken string, w http.ResponseWriter)  {
+func LogIn(user *User, prevtoken string, w http.R
+
+esponseWriter)  {
 
 	u, err := uuid.NewV4()
 	if err != nil {

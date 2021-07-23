@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://api-maps.yandex.ru/2.1/?apikey=f3d5a323-5c86-469e-b606-7e3cf11b5ee3&lang=ru_RU" type="text/javascript">
     </script>
     <script type="text/javascript">
@@ -148,166 +150,37 @@
         }
     </script>
     <style>
-
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        #map {
-            min-height: 100%;
-        }
-
-        .block {
-            filter: blur(5px);
-            pointer-events:none;
-        }
-
-        .overlay {
-            position: fixed; /* Sit on top of the page content */
-            z-index: 3; /* Specify a stack order in case you're using a different order for other elements */
-            cursor: pointer; /* Add a pointer on hover */
-        }
-
-        #authmenu {
-            width: 30%;
-            height: 40%;
-            background-color: white;
-            text-align: center;
-        }
-
         .center {
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .sidenav {
-            height: 100%; /* 100% Full-height */
-            width: 0; /* 0 width - change this with JavaScript */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Stay on top */
-            top: 0; /* Stay at the top */
-            right: 0;
-            background-color: #111; /* Black*/
-            overflow-x: hidden; /* Disable horizontal scroll */
-            padding-top: 60px; /* Place content 60px from the top */
-            transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
-            text-align:center;
-
-        }
-
-        .prettybutton {
-            background-color: gray; /* Green */
-            border: none;
-            color: white;
-            padding: 10px 24px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-        }
-
-        /* The navigation menu links */
-        .sidenav a {
-            padding: 8px 8px 8px 32px;
-            text-decoration: none;
-            font-size: 25px;
-            color: #818181;
-            display: block;
-            transition: 0.3s;
-        }
-
-        /* When you mouse over the navigation links, change their color */
-        .sidenav a:hover {
-            color: #f1f1f1;
-        }
-
-        .sidenav .closebtn {
-            position: absolute;
-            top: 0;
-            right: 25px;
-            font-size: 36px;
-            margin-left: 50px;
-        }
-
-        .backbtn {
-            position: absolute;
-            top: 0;
-            left: 25px;
-            font-size: 36px;
-            margin-left: 50px;
-        }
-
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-        }
-
-        .vcenter {
             display: flex;
             justify-content: center;
-
             align-items: center;
-            height: 200px;
-            border: 3px solid
-            green;
         }
-
-        @media screen and (max-height: 450px) {
-            .sidenav {padding-top: 15px;}
-            .sidenav a {font-size: 18px;}
-        }
-
-        .falsebutton {
-         display: inline-block; /* Строчно-блочный элемент */
-         background: LightSeaGreen; /* Серый цвет фона */
-         color: #fff; /* Белый цвет текста */
-         padding: 0.7rem 1rem; /* Поля вокруг текста */
-         text-decoration: none; /* Убираем подчёркивание */
-         border-radius: 10px; /* Скругляем уголки */
-        }
-
     </style>
+
 </head>
-<body>
-
-<div  id = "authmenu" style = "border-bottom: 35px solid white; border-radius: 10px" class="center overlay"{{if .Authorized}}style="display:none"{{else}}style="display:block"{{end}}>
-
-    {{if not .Authorized}}
-    <p><img src="images/1X6lrC7q_XI11.jpg" alt=""></p>
-    <p>Напиши боту <b>@GoToMeets_bot</b> в Telegram, чтобы получить ссылку.</p>
-    <a href="https://t.me/GoToMeets_bot" class="falsebutton center overlay" style = "top: 105%">
-        <h1.5>так будет быстрее</h1.5>
-    </a>
-    {{end}}
-
-</div>
-{{if .Authorized}}
-<div id="mySidenav" class="sidenav">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <div id="main_menu">
-
-        <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
-        <h2 style="color:white;word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
-        <button id="setuploc" class="prettybutton" onclick="setuploc()">Засетапить точку проживания</button>
-        <p id="Note" style="color: red; padding-right: 20px;padding-left: 20px"></p>
-    </div>
-    <div hidden id="user_page">
-        <a href="javascript:void(0)" class="backbtn" onclick="backNav()"><</a>
-        <img id="user_avatar" alt="Avatar" class="avatar">
-        <h2 style="color:white" id="user_fullname"> </h2>
-        <h2 style="color:white" id="user_username"> </h2>
-    </div>
-</div>
-
-<!-- Use any element to open the sidenav -->
-<span onclick="openNav()" id = "openbtn" class="overlay" style="left: 90%">
-    <h1 style="background-color: LightSeaGreen; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
-</span>
-{{end}}
-
-<div id="map" {{if not .Authorized}}class="block"{{end}}></div>
-</body>
+    <body>
+        <section class="section">
+			<div class="container">
+				<div class="columns">
+					<div class="column">
+					</div>
+					<div class="column center" style="padding-top: 12%">
+						<div class="box has-text-centered" style="max-width: 500px; padding-bottom: 30px">
+                            <figure class="image center">
+                                <img src="images/logo1.png" style="max-width: 380px; padding-bottom: 10%">
+                            </figure>
+                            <button class="button is-primary is-outlined">
+                                <span class="icon">
+                                    <i class="fab fa-telegram-plane"></i>
+                                </span>
+                                <span>@GoToMeets_bot </span>
+                            </button>
+						</div>
+					</div>
+					<div class="column">
+					</div>
+				</div>
+			</div>
+		</section>
+	</body>
 </html>
