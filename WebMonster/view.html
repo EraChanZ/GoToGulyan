@@ -102,6 +102,7 @@
         function setuploc() {
             if (window.choosingloc) {
                 window.choosingloc = false
+                document.getElementById("smallnote").hidden = false;
                 document.getElementById("setuploc").innerHTML = "Засетапить точку проживания"
                 document.getElementById("Note").innerHTML = ""
                 if (window.prevlandmark) {
@@ -133,8 +134,7 @@
             }
             else{
                 window.choosingloc = true
-                document.getElementById("Note").innerHTML = "Внимание! Указанные вами координаты будут сдвинуты на случайное расстояние, чтобы вас никто не подкараулил у подъезда."
-                document.getElementById("setuploc").innerHTML = "Выбрал"
+                document.getElementById("setuploc").innerHTML = "Зафиксировать"
             }
         }
 
@@ -169,7 +169,7 @@
             background-image: url(https://images.wallpaperscraft.ru/image/zdaniia_arhitektura_steklo_216439_3840x2160.jpg);
             background-size: cover;
             z-index: -1;
-            filter: blur: 4px;
+            filter: blur(4px);
         }
 
         .sidenav {
@@ -179,7 +179,7 @@
             z-index: 1; /* Stay on top */
             top: 0; /* Stay at the top */
             right: 0;
-            background-color: #111; /* Black*/
+            background-color: rgba(0, 0, 0, 0.75);
             overflow-x: hidden; /* Disable horizontal scroll */
             padding-top: 60px; /* Place content 60px from the top */
             transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
@@ -214,17 +214,21 @@
             height: 150px;
             border-radius: 50%;
         }
+
+        .block {
+            filter: blur(9px);
+        }
     </style>
 
 </head>
     <body>
+    <!-- для неавторизованного пользователя --------------------------------------------------------- -->
     <section class="blured is-fullheight" style="filter: blur(4px)"></section>
-        <!-- для неавторизованного пользователя ---------------------------------------------------------
+        <!--
         <section class="section">
 			<div class="container">
 				<div class="columns">
-					<div class="column">
-					</div>
+					<div class="column"></div>
 					<div class="column center" style="padding-top: 12%">
 						<div class="box has-text-centered" style="max-width: 500px; padding-bottom: 30px">
                             <figure class="image center">
@@ -238,25 +242,23 @@
                             </a>
 						</div>
 					</div>
-					<div class="column">
-					</div>
+					<div class="column"></div>
 				</div>
 			</div>
 		</section>-->
     <!-- для авторизованного пользователя --------------------------------------------------------- -->
     <!-- это временная кнопочка, потом поменяю на нормальную --------------------------------------------------------- -->
-    <span onclick="openNav()" id = "openbtn" class="overlay" style="left: 91.5%; top: 5%">
-        <h1 style="background-color: LightSeaGreen; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
+    <span onclick="openNav()" id = "openbtn" class="overlay is-primary" style="left: 91.5%; top: 5%">
+        <h1 style="background-color: turquoise; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
     </span>
     <!-- менюха --------------------------------------------------------- -->
-    <div id="mySidenav" class="sidenav" style="width: 450px">
+    <div id="mySidenav" class="sidenav" style="width: 450px"> <!-- ширина нужна только для просмотра фронтентендеру-->
     <a href="javascript:void(0)" class="smallbtn" style="right: 25px" onclick="closeNav()">&times;</a>
     <div id="main_menu">
 
         <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
         <h2 style="color:white; word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
         <button id="setuploc" class="button is-white is-outlined" onclick="setuploc()">засетапить точку проживания</button>
-        <p id="Note" style="color: red; padding-right: 20px;padding-left: 20px"></p>
     </div>
     <div hidden id="user_page">
         <a href="javascript:void(0)" class="smallbtn" style="left: 25px" onclick="backNav()"><</a>
@@ -265,5 +267,18 @@
         <h2 style="color:white" id="user_username"> </h2>
     </div>
 </div>
+    <div class="container">
+				<div class="columns">
+					<div class="column"></div>
+					<div class="column center" style="padding-top: 25%">
+						<div hidden id="smallnote" class="overlay notification is-primary" style="cursor: default; width: 380px">
+                            <button id="smallnotebtn" onclick="getElementById('smallnote').hidden = true" class="delete"></button>
+                            <strong>Внимание!</strong> Указанные вами координаты будут сдвинуты на случайное расстояние, чтобы вас никто не подкараулил у подъезда :)
+                        </div>
+					</div>
+					<div class="column"></div>
+				</div>
+			</div>
+
 	</body>
 </html>
