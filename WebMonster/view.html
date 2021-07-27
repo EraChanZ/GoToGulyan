@@ -206,7 +206,6 @@
             position: absolute;
             top: 0;
             font-size: 36px;
-            margin-left: 50px;
         }
 
         .avatar {
@@ -215,8 +214,16 @@
             border-radius: 50%;
         }
 
-        .block {
-            filter: blur(9px);
+        .prettybutton {
+            width: 58%;
+            margin: 8px;
+        }
+
+        .prettytextstyle {
+            font-size: 1.5em;
+            text-align: left;
+            color: grey;
+            margin-left: 10%;
         }
     </style>
 
@@ -248,23 +255,63 @@
 		</section>-->
     <!-- для авторизованного пользователя --------------------------------------------------------- -->
     <!-- это временная кнопочка, потом поменяю на нормальную --------------------------------------------------------- -->
-    <span onclick="openNav()" id = "openbtn" class="overlay is-primary" style="left: 91.5%; top: 5%">
+    <span onclick="openNav()" id = "openbtn" class="overlay" style="left: 91.5%; top: 5%">
         <h1 style="background-color: turquoise; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
     </span>
     <!-- менюха --------------------------------------------------------- -->
     <div id="mySidenav" class="sidenav" style="width: 450px"> <!-- ширина нужна только для просмотра фронтентендеру-->
     <a href="javascript:void(0)" class="smallbtn" style="right: 25px" onclick="closeNav()">&times;</a>
+        <div id="shysmallbtn" hidden>
+            <a href="javascript:void(0)" class="smallbtn" style="left: 25px" onclick="backNav()"><</a>
+        </div>
     <div id="main_menu">
 
         <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
         <h2 style="color:white; word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
-        <button id="setuploc" class="button is-white is-outlined" onclick="setuploc()">засетапить точку проживания</button>
-    </div>
+        <button id="setuploc" class="button is-primary is-outlined prettybutton" style="margin-top: 20px" onclick="setuploc()">засетапить точку проживания</button>
+        <button class="button is-white is-outlined prettybutton" onclick="func('newproject')">создать мероприятие</button>
+        <button class="button is-white is-outlined prettybutton" onclick="func('allprojects')">список мероприятий</button>
+    </div> <!-- в func также должно быть прописано изменение параметра hidden для кнопки "<" -->
+    <!-- страница другого юзера --------------------------------------------------------- -->
     <div hidden id="user_page">
-        <a href="javascript:void(0)" class="smallbtn" style="left: 25px" onclick="backNav()"><</a>
         <img id="user_avatar" alt="Avatar" class="avatar">
         <h2 style="color:white" id="user_fullname"> </h2>
         <h2 style="color:white" id="user_username"> </h2>
+    </div>
+    <!-- формы для создания нового мероприятия --------------------------------------------------------- -->
+    <div hidden id="newproject">
+        <div class="field">
+            <label class="label prettytextstyle">название</label>
+            <div class="control">
+                <input class="input" style="width: 80%; margin-bottom: 5%" type="text" placeholder="">
+            </div>
+            <label class="label prettytextstyle">изображение</label>
+            <div class="file has-name">
+                <label class="file-label" style="margin-left: 10%; margin-bottom: 5%" >
+                    <input class="file-input"type="file" name="resume">
+                    <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                    загрузить
+                    </span>
+                    </span>
+                    <span class="file-name">тут че загрузили</span>
+                </label>
+            </div>
+            <label class="label prettytextstyle">гео-локация</label>
+            <div class="control">
+                <input class="input" style="width: 80%; margin-bottom: 5%" type="text" placeholder="я так не умею сори">
+            </div>
+            <label class="label prettytextstyle">описание</label>
+            <div id="newdiv" style="width:80%; margin-left: 10%">
+            <textarea class="textarea" style="margin-bottom: 5%" placeholder=""></textarea>
+                <button class="button is-white is-outlined" style="width: 40%" onclick="">готово!</button>
+            </div>
+        </div>
+    </div>
+    <div hidden id="allprojects">
     </div>
 </div>
     <div class="container">
