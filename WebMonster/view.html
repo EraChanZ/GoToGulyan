@@ -231,6 +231,7 @@
     <body>
     <!-- для неавторизованного пользователя --------------------------------------------------------- -->
     <section class="blured is-fullheight" style="filter: blur(4px)"></section>
+    <!-- написать условие authorized и раскомментировать эту часть -->
         <!--
         <section class="section">
 			<div class="container">
@@ -259,7 +260,7 @@
         <h1 style="background-color: turquoise; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
     </span>
     <!-- менюха --------------------------------------------------------- -->
-    <div id="mySidenav" class="sidenav" style="width: 450px"> <!-- ширина нужна только для просмотра фронтентендеру-->
+    <div id="mySidenav" class="sidenav" style="width: 450px"> <!-- ширина нужна только для просмотра фронтентендеру, а так нужно убрать стиль-->
     <a href="javascript:void(0)" class="smallbtn" style="right: 25px" onclick="closeNav()">&times;</a>
         <div id="shysmallbtn" hidden>
             <a href="javascript:void(0)" class="smallbtn" style="left: 25px" onclick="backNav()"><</a>
@@ -269,7 +270,7 @@
         <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
         <h2 style="color:white; word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
         <button id="setuploc" class="button is-primary is-outlined prettybutton" style="margin-top: 20px" onclick="setuploc()">засетапить точку проживания</button>
-        <button class="button is-white is-outlined prettybutton" onclick="func('newproject')">создать мероприятие</button>
+        <button class="button is-white is-outlined prettybutton" onclick="getElementById('newproject').hidden = false; getElementById('main_menu').hidden = true">создать мероприятие</button>
         <button class="button is-white is-outlined prettybutton" onclick="func('allprojects')">список мероприятий</button>
     </div> <!-- в func также должно быть прописано изменение параметра hidden для кнопки "<" -->
     <!-- страница другого юзера --------------------------------------------------------- -->
@@ -293,22 +294,42 @@
                     <span class="file-icon">
                         <i class="fas fa-upload"></i>
                     </span>
-                    <span class="file-label">
-                    загрузить
-                    </span>
+                    <span class="file-label">загрузить</span>
                     </span>
                     <span class="file-name">тут че загрузили</span>
                 </label>
             </div>
             <label class="label prettytextstyle">гео-локация</label>
             <div class="control">
-                <input class="input" style="width: 80%; margin-bottom: 5%" type="text" placeholder="я так не умею сори">
+                <input class="input" style="width: 80%; margin-bottom: 3%" type="text" placeholder="адрес" disabled>
+                <div style="width:22%; margin-left: 10%; margin-bottom: 5%">
+                    <button class="button is-white is-outlined" onclick="">выбрать</button>
+                    <!-- тут организовать что-то по типу вызова setuploc по нажатию-->
+                </div>
+            </div>
+            <label class="label prettytextstyle">ссылка на чат</label>
+            <div class="control">
+                <input class="input" style="width: 80%; margin-bottom: 5%" type="text" placeholder="">
             </div>
             <label class="label prettytextstyle">описание</label>
-            <div id="newdiv" style="width:80%; margin-left: 10%">
+            <div style="width:80%; margin-left: 10%">
             <textarea class="textarea" style="margin-bottom: 5%" placeholder=""></textarea>
-                <button class="button is-white is-outlined" style="width: 40%" onclick="">готово!</button>
+            <label class="label prettytextstyle" style="margin-left: 0%">рассылка приглашений</label>
+                <div style="width:34%; margin-bottom: 5%">
+                    <label class="checkbox">
+                    <input type="checkbox">
+                    <!--  if ( $(this).is(':checked') ) {сделать форму ввода ниже неактивной} else {сделать активной обратно}-->
+                    <!-- неактивная форма - disabled (https://bulma.io/documentation/form/textarea/)-->
+                позвать всех
+            </label>
+                </div>
+            <div class="control" style="margin-bottom: 10%">
+                <textarea class="textarea" placeholder="ввод никнеймов вручную (??)"></textarea>
+                <!-- пока что так, в идеале ниже будет список пользователей (<strong> @ник </strong> + юзернейм) с поисковой строкой -->
             </div>
+            </div>
+            <button class="button is-white is-outlined" style="width: 30%; margin-bottom: 10%" onclick="">готово!</button>\
+            <!-- тут должна быть проверка на заполнение всех полей-->
         </div>
     </div>
     <div hidden id="allprojects">
