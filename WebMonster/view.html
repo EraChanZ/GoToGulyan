@@ -255,9 +255,8 @@
 			</div>
 		</section>-->
     <!-- для авторизованного пользователя --------------------------------------------------------- -->
-    <!-- это временная кнопочка, потом поменяю на нормальную --------------------------------------------------------- -->
-    <span onclick="openNav()" id = "openbtn" class="overlay" style="left: 91.5%; top: 5%">
-        <h1 style="background-color: turquoise; border-radius: 30px 0px 30px 30px"><img src="images/28nG2L0Uif.png" alt=""></h1>
+    <span onclick="openNav()" id = "openbtn" class="overlay" style="left: 91.5%; top: 3%">
+    <input type="image" src="images/button100.png" width="100" height="100">
     </span>
     <!-- менюха --------------------------------------------------------- -->
     <div id="mySidenav" class="sidenav" style="width: 450px"> <!-- ширина нужна только для просмотра фронтентендеру, а так нужно убрать стиль-->
@@ -270,8 +269,8 @@
         <img src="{{.Cur_user.Avatar}}" alt="Avatar" class="avatar">
         <h2 style="color:white; word-break: keep-all;">{{.Cur_user.Full_name}}</h2>
         <button id="setuploc" class="button is-primary is-outlined prettybutton" style="margin-top: 20px" onclick="setuploc()">засетапить точку проживания</button>
-        <button class="button is-white is-outlined prettybutton" onclick="getElementById('newproject').hidden = false; getElementById('main_menu').hidden = true">создать мероприятие</button>
-        <button class="button is-white is-outlined prettybutton" onclick="func('allprojects')">список мероприятий</button>
+        <button class="button is-white is-outlined prettybutton" onclick="func('newproject')">создать мероприятие</button>
+        <button class="button is-white is-outlined prettybutton" onclick="getElementById('allprojects').hidden = false; getElementById('main_menu').hidden = true">список мероприятий</button>
     </div> <!-- в func также должно быть прописано изменение параметра hidden для кнопки "<" -->
     <!-- страница другого юзера --------------------------------------------------------- -->
     <div hidden id="user_page">
@@ -332,21 +331,52 @@
             <!-- тут должна быть проверка на заполнение всех полей-->
         </div>
     </div>
-    <div hidden id="allprojects">
-    </div>
+
 </div>
-    <div class="container">
-				<div class="columns">
-					<div class="column"></div>
-					<div class="column center" style="padding-top: 25%">
-						<div hidden id="smallnote" class="overlay notification is-primary" style="cursor: default; width: 380px">
-                            <button id="smallnotebtn" onclick="getElementById('smallnote').hidden = true" class="delete"></button>
-                            <strong>Внимание!</strong> Указанные вами координаты будут сдвинуты на случайное расстояние, чтобы вас никто не подкараулил у подъезда :)
-                        </div>
-					</div>
-					<div class="column"></div>
-				</div>
-			</div>
+    <div hidden id="allprojects">
+        <div class="container">
+            <div class="columns">
+                <div class="column"></div>
+                <div class="column center is-half" style="padding-top: 25%">
+                    <div id="tabl" class="overlay notification is-white" style="cursor: default; width: 540px">
+                        <button id="tablbtn" onclick="getElementById('tabl').hidden = true" class="delete"></button>
+                        <table class="table">
+                        <thead>
+                        <tr>
+                            <th>что</th>
+                            <th>где</th>
+                            <th>зачем</th>
+                            <th>ссылка на чат</th>
+                        </tr>
+                        </thead>
+                    <tbody>
+                        <tr>
+                          <th>Free питса!</th> <!-- тут еще нужно добавить изображение-->
+                          <td>г.Mосква, 1-й вязовский пр-д, 4, стр. 19</td>
+                          <td>Тимофей накормит всех бесплатной пиццей</td>
+                          <td><a href="https://en.wikipedia.org/wiki/Leicester_City_F.C." title="Leicester City F.C.">перейти</a> </td>
+                        </tr>
+                    </tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="column"></div>
+                </div>
+            </div>
+        </div>
+
+    <div id="message" class="container">
+        <div class="columns">
+            <div class="column"></div>
+            <div class="column center" style="padding-top: 25%">
+                <div hidden id="smallnote" class="overlay notification is-primary" style="cursor: default; width: 380px"> <!--hidden until id-->
+                    <button id="smallnotebtn" onclick="getElementById('smallnote').hidden = true" class="delete"></button>
+                    <strong>Внимание!</strong> Указанные вами координаты будут сдвинуты на случайное расстояние, чтобы вас никто не подкараулил у подъезда :)
+                </div>
+            </div>
+            <div class="column"></div>
+        </div>
+    </div>
 
 	</body>
 </html>
