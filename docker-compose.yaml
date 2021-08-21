@@ -49,7 +49,7 @@ services:
         ports:
             - 5432:5432
         environment:
-            - POSTGRES_PASSWORD=s6c89q4g
+            - POSTGRES_PASSWORD=******
     rediska:
         image: redis
         restart: always
