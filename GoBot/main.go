@@ -18,13 +18,12 @@ var client redis.Client
 var db *gorm.DB
 var err error
 
-const token string = "1786001765:AAG40Y7K9MVfzDPriKRJHKetToDBx3T2V5s"
-//const token string = "1865007974:AAHuwFGJCb1AkVVlrxNVDFk_UZT-i4CvnKA"
+const token string = "**********************"
 
 const cloudinary_url string = "https://api.cloudinary.com/v1_1/demo/image/upload"
-const cloudinary_API_KEY string = "896491813758597"
-const cloudinary_API_SECRET string = "garf_hPU42GPUsyBAvaBQ9MjU2k"
-const cloudinary_upload_preset string = "uxgityak"
+const cloudinary_API_KEY string = "**************"
+const cloudinary_API_SECRET string = "******************"
+const cloudinary_upload_preset string = "****************"
 
 var Markups = map[string]tgbotapi.ReplyKeyboardMarkup{
 	"/" : tgbotapi.NewReplyKeyboard(
